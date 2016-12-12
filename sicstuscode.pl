@@ -5,8 +5,10 @@
 get_empty(AVL) :-
   empty_avl(AVL).
 
-test_strings :-
-  A = "test double quotes",
+tesd(sss(A)).
+
+test_strings:-
+  A="test double quotes",
   write(A).
 
 a(A) --> "test", {empty_avl(A)}.
