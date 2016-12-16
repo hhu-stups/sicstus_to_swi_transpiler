@@ -20,5 +20,6 @@ expand_expression(String, List) :-
 expand_expression(A, A).
 
 term_expansion(A, B) :-
+  format('was asked to transpile ~w\n', [A]),
   do_expand(A,B),
   format('from ~w to ~w\n',[A,B]).
