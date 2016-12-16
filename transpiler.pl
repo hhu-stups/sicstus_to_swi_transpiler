@@ -22,4 +22,6 @@ expand_expression(A, A).
 term_expansion(A, B) :-
   format('was asked to transpile ~w\n', [A]),
   do_expand(A,B),
+  % namen von datei finden, in der A definiert ist?
+  % hier B abgreifen und in Datei schreiben?
   format('from ~w to ~w\n',[A,B]).
