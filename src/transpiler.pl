@@ -1,15 +1,25 @@
+/** <module> Sicstus to Swi prolog transpiler module
+*/
+
 :- module(transpiler, [transpile_file/2]).
 
 :- use_module(transpiler_core).
 
-% transpile the sicstus file, specified by InputFilePath, write the result to the file specified by OutputFilePath
+%! transpile_file(+InputFilePath, +OutputFilePath) is det
+% Transpile the Sicstus prolog code of the input file, specified by InputFilePath,
+% and write the result to the file specified by OutputFilePath.
 transpile_file(InputFilePath, OutputFilePath) :-
 	open(InputFilePath, read, InputStream),
 	open(OutputFilePath, write, OutputStream),
 	read_terms(InputStream, TermList),
+	% extract directory of output source file path
+	absolute_file_name(OutputFilePath, AbsoluteOutputFilePath),
+	file_directory_name(AbsoluteOutputFilePath, Directory),
 	write_terms(OutputStream, TermList),
 	close(InputStream),
-	close(OutputStream).
+	close(OutputStream),
+	% copy necessary module files
+	copy_extension_module_files(Directory).
 
 read_terms(Stream, []) :-
 	at_end_of_stream(Stream), !.
