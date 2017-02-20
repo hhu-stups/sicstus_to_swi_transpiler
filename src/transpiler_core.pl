@@ -44,14 +44,111 @@ transpile_term(Term, NNTerm) :-
 	transpile_term(NTerm, NNTerm), !.
 transpile_term(Term, Term).
 
+% predefined operators in order of priority (cp. ISO standard 6.3.4.4 (p. 19))
+transpile_body(A;B, NA;NB) :-
+	transpile_body(A, NA),
+	transpile_body(B, NB), !.
+transpile_body(A->B, NA->NB) :-
+	transpile_body(A, NA),
+	transpile_body(B, NB), !.
 transpile_body((A,B), (NA,NB)) :-
 	transpile_body(A, NA),
 	transpile_body(B, NB), !.
+transpile_body(\+Term, \+NTerm) :-
+	transpile_body(Term, NTerm), !.
 transpile_body({Term}, {NTerm}) :-
 	transpile_body(Term, NTerm), !.
 transpile_body(A=B, NA=NB) :-
-	when(nonvar(A), transpile_expression(A, NA)),
-	when(nonvar(B), transpile_expression(B, NB)), !.
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A\=B, NA\=NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A==B, NA==NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A\==B, NA\==NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A@<B, NA@<NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A@=<B, NA@=<NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A@>B, NA@>NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A@>=B, NA@>=NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A=..B, NA=..NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A is B, NA is NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A=:=B, NA=:=NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A=\=B, NA=\=NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A<B, NA<NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A=<B, NA=<NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A>B, NA>NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A>=B, NA>=NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A+B, NA+NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A-B, NA-NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A/\B, NA/\NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A\/B, NA\/NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A*B, NA*NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A/B, NA/NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A//B, NA//NB) :-
+	(nonvar(A) -> transpile_expression(A, NA); A = NA),
+	(nonvar(B) -> transpile_expression(B, NB); B = NB), !.
+transpile_body(A rem B, NA rem NB) :-
+	(nonvar(A)-> transpile_expression(A, NA); A = NA),
+	(nonvar(B)-> transpile_expression(B, NB); B = NB), !.
+transpile_body(A mod B, NA mod NB) :-
+	(nonvar(A)-> transpile_expression(A, NA); A = NA),
+	(nonvar(B)-> transpile_expression(B, NB); B = NB), !.
+transpile_body(A<<B, NA<<NB) :-
+	(nonvar(A)-> transpile_expression(A, NA); A = NA),
+	(nonvar(B)-> transpile_expression(B, NB); B = NB), !.
+transpile_body(A>>B, NA>>NB) :-
+	(nonvar(A)-> transpile_expression(A, NA); A = NA),
+	(nonvar(B)-> transpile_expression(B, NB); B = NB), !.
+transpile_body(A**B, NA**NB) :-
+	(nonvar(A)-> transpile_expression(A, NA); A = NA),
+	(nonvar(B)-> transpile_expression(B, NB); B = NB), !.
+transpile_body(A^B, NA^NB) :-
+	(nonvar(A)-> transpile_expression(A, NA); A = NA),
+	(nonvar(B)-> transpile_expression(B, NB); B = NB), !.
+transpile_body(-Term, -NTerm) :-
+	(nonvar(Term) -> transpile_expression(Term, NTerm); Term = NTerm), !.
+transpile_body(\Term, \NTerm) :-
+	(nonvar(Term) -> transpile_expression(Term, NTerm); Term = NTerm), !.
 transpile_body(Term, NTerm) :-
 	transpile_expression(Term, NTerm), !.
 transpile_body(Term, NTerm) :-
