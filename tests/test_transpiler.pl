@@ -29,6 +29,18 @@ test(avl_file, [setup(get_sicstuscode_path(Path, "sicstuscode/avl.sicstus.pl"))]
 	next_char(d, AAVL, e),
 	count_alphabet(AAVL, 26).
 
+test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/do_loop.sicstus.pl"))]) :-
+	transpile_file(Path, "output/do_loop.swi.pl"),
+	consult("output/do_loop.swi.pl"),
+	next_integer([1, 2, 3, 4], [2, 3, 4, 5]),
+	sum_list([10, 100, 50], 160),
+	integer_list_between(3, 7, [3, 4, 5, 6]),
+	count_items([1, 2, 3, 4], 4),
+	count_arguments(a(b, c, d), 3),
+	count_arguments([1, 2, 3], 2),
+	number_arguments(a(a, b), [(1, a), (2, b)]),
+	add_to_items([1,2,3], 3, [4, 5, 6]).
+
 test(inputfile_does_not_exist, [error(existence_error(_, "sicstuscode/test.pl"))]) :-
 	transpile_file("sicstuscode/test.pl", "output/test.pl").
 
