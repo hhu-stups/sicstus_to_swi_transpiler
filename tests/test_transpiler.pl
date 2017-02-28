@@ -34,7 +34,7 @@ test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/do_loop.sicstu
 	consult("output/do_loop.swi.pl"),
 	next_integer([1, 2, 3, 4], [2, 3, 4, 5]),
 	sum_list([10, 100, 50], 160),
-	integer_list_between(3, 7, [3, 4, 5, 6]),
+	integer_list_between(3, 7, [3, 4, 5, 6, 7]),
 	count_items([1, 2, 3, 4], 4),
 	count_arguments(a(b, c, d), 3),
 	count_arguments([1, 2, 3], 2),

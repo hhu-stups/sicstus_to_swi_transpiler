@@ -1,11 +1,12 @@
 /** <module> Provides core functionality for the transpiler.
 */
 
-:- module(transpiler_core, [copy_extension_module_files/1, transpile_term/2]).
+:- module(transpiler_core, [copy_extension_module_files/1, get_additional_directives/1, transpile_term/2]).
 
 :- use_module(transpiler_avl).
 
-:- dynamic(required_module/2).
+:- dynamic(need_do_loop_extension/0).
+
 
 copy_extension_module_file(SourceDirectory, DestinationDirectory, FileName) :-
 	atom_concat(SourceDirectory, FileName, SourcePath),
@@ -23,9 +24,14 @@ copy_extension_module_files(Directory) :-
 	atom_concat(TranspilerCoreFileDirectory, '/swi_prolog_extensions/', ModuleDirectory),
 	% determine necessary modules
 	extension_module_avl(ModuleList),
+	NewModuleList = ['do_loop_extension.pl'|ModuleList],
 	% copy modules
-	forall(member(Member, ModuleList), copy_extension_module_file(ModuleDirectory, DestinationDirectory, Member)).
+	forall(member(Member, NewModuleList), copy_extension_module_file(ModuleDirectory, DestinationDirectory, Member)).
 
+get_additional_directives([(:-use_module(do_loop_extension))]) :-
+	need_do_loop_extension,
+	retractall(need_do_loop_extension), !.
+get_additional_directives([]).
 
 %! transpile_term(+Term, -TranspiledTerm) is det
 %
@@ -48,6 +54,10 @@ transpile_term(Term, Term).
 transpile_body(A;B, NA;NB) :-
 	transpile_body(A, NA),
 	transpile_body(B, NB), !.
+transpile_body(do(A, B), do(A, NB)) :-
+	writeln("do---"),
+	asserta(need_do_loop_extension),
+	transpile_term(B, NB), !.
 transpile_body(A->B, NA->NB) :-
 	transpile_body(A, NA),
 	transpile_body(B, NB), !.
