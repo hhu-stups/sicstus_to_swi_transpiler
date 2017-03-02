@@ -30,10 +30,10 @@ transpile_avl_term(avl_member(X, Y), gen_assoc(X, Y, _)).
 transpile_avl_term(avl_member(X, Y, Z), gen_assoc(X, Y, Z)).
 transpile_avl_term(avl_fetch(X, Y), get_assoc(X, Y, _)).
 transpile_avl_term(avl_fetch(X, Y, Z), get_assoc(X, Y, Z)).
-transpile_avl_term(avl_next(X, Y, Z), next_assoc(X, Y, Z)).
-transpile_avl_term(avl_next(A, B, C, D), next_assoc(A, B, C, D)).
-transpile_avl_term(avl_prev(X, Y, Z), prev_assoc(X, Y, Z)).
-transpile_avl_term(avl_prev(A, B, C, D), prev_assoc(A, B, C, D)).
+transpile_avl_term(avl_next(X, Y, Z), get_next_assoc(X, Y, Z)).
+transpile_avl_term(avl_next(A, B, C, D), get_next_assoc(A, B, C, D)).
+transpile_avl_term(avl_prev(X, Y, Z), get_prev_assoc(X, Y, Z)).
+transpile_avl_term(avl_prev(A, B, C, D), get_prev_assoc(A, B, C, D)).
 transpile_avl_term(avl_change(A, B, C, D, E), get_assoc(A, B, C, D, E)).
 transpile_avl_term(ord_list_to_avl(X, Y), ord_list_to_assoc(X, Y)). % SWI prolog checks ascending order of the keys.
 transpile_avl_term(list_to_avl(X, Y), list_to_assoc(X, Y)).

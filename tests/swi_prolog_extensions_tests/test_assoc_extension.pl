@@ -122,74 +122,74 @@ test(invalid_third_argument, [setup(get_test_tree(Assoc, 4)), error(type_error(e
 :- begin_tests(next_assoc_3).
 
 test(invalid_first_argument, [setup(get_test_tree(Assoc, 1)), fail]) :-
-	next_assoc(k, Assoc, _).
+	get_next_assoc(k, Assoc, _).
 
 test(invalid_first_argument_2, [setup(get_test_tree(Assoc, 4)), true(Key == a)]) :-
-	next_assoc(0, Assoc, Key).
+	get_next_assoc(0, Assoc, Key).
 
 test(invalid_second_argument, [fail]) :-
-	next_assoc(_, a, _).
+	get_next_assoc(_, a, _).
 
 test(size1, [setup(get_test_tree(Assoc, 1)), fail]) :-
-  next_assoc(a, Assoc, _).
+  get_next_assoc(a, Assoc, _).
 
 test(size2left, [setup(get_test_tree(Assoc, 2-left)), true(Key == b)]) :-
-	next_assoc(a, Assoc, Key).
+	get_next_assoc(a, Assoc, Key).
 
 test(size2right, [setup(get_test_tree(Assoc, 2-right)), true(Key == b)]) :-
-	next_assoc(a, Assoc, Key).
+	get_next_assoc(a, Assoc, Key).
 
 test(size4_var, [setup(get_test_tree(Assoc, 4)), true(Key == a)]) :-
-	next_assoc(_, Assoc, Key).
+	get_next_assoc(_, Assoc, Key).
 
 test(size4_a, [setup(get_test_tree(Assoc, 4)), true(Key == b)]) :-
-	next_assoc(a, Assoc, Key).
+	get_next_assoc(a, Assoc, Key).
 
 test(size4_b, [setup(get_test_tree(Assoc, 4)), true(Key == c)]) :-
-	next_assoc(b, Assoc, Key).
+	get_next_assoc(b, Assoc, Key).
 
 test(size4_c, [setup(get_test_tree(Assoc, 4)), true(Key == d)]) :-
-	next_assoc(c, Assoc, Key).
+	get_next_assoc(c, Assoc, Key).
 
 test(size4_d, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	next_assoc(d, Assoc, _).
+	get_next_assoc(d, Assoc, _).
 
 :- end_tests(next_assoc_3).
 
 :- begin_tests(next_assoc_4).
 
 test(invalid_first_argument, [setup(get_test_tree(Assoc, 1)), fail]) :-
-	next_assoc(k, Assoc, _, _).
+	get_next_assoc(k, Assoc, _, _).
 
 test(invalid_second_argument, [fail]) :-
-	next_assoc(_, a, _, _).
+	get_next_assoc(_, a, _, _).
 
 test(invalid_first_argument_2, [setup(get_test_tree(Assoc, 4)), true((Key == a, Value == 1))]) :-
-	next_assoc(0, Assoc, Key, Value).
+	get_next_assoc(0, Assoc, Key, Value).
 
 test(size1, [setup(get_test_tree(Assoc, 1)), fail]) :-
-  next_assoc(a, Assoc, _, _).
+  get_next_assoc(a, Assoc, _, _).
 
 test(size2left, [setup(get_test_tree(Assoc, 2-left)), true((Key == b, Value == 2))]) :-
-	next_assoc(a, Assoc, Key, Value).
+	get_next_assoc(a, Assoc, Key, Value).
 
 test(size2right, [setup(get_test_tree(Assoc, 2-right)), true((Key == b, Value == 2))]) :-
-	next_assoc(a, Assoc, Key, Value).
+	get_next_assoc(a, Assoc, Key, Value).
 
 test(size4_var, [setup(get_test_tree(Assoc, 4)), true((Key == a, Value == 1))]) :-
-	next_assoc(_, Assoc, Key, Value).
+	get_next_assoc(_, Assoc, Key, Value).
 
 test(size4_a, [setup(get_test_tree(Assoc, 4)), true((Key == b, Value == 2))]) :-
-	next_assoc(a, Assoc, Key, Value).
+	get_next_assoc(a, Assoc, Key, Value).
 
 test(size4_b, [setup(get_test_tree(Assoc, 4)), true((Key == c, Value == 3))]) :-
-	next_assoc(b, Assoc, Key, Value).
+	get_next_assoc(b, Assoc, Key, Value).
 
 test(size4_c, [setup(get_test_tree(Assoc, 4)), true((Key == d, Value == 4))]) :-
-	next_assoc(c, Assoc, Key, Value).
+	get_next_assoc(c, Assoc, Key, Value).
 
 test(size4_d, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	next_assoc(d, Assoc, _, _).
+	get_next_assoc(d, Assoc, _, _).
 
 :- end_tests(next_assoc_4).
 
@@ -206,74 +206,74 @@ test(var_argument, [true(Assoc == t)]) :-
 :- begin_tests(prev_assoc_3).
 
 test(invalid_first_argument, [setup(get_test_tree(Assoc, 4)), true(Key == d)]) :-
-	prev_assoc(k, Assoc, Key).
+	get_prev_assoc(k, Assoc, Key).
 
 test(invalid_first_argument_2, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	prev_assoc(0, Assoc, _).
+	get_prev_assoc(0, Assoc, _).
 
 test(invalid_second_argument, [fail]) :-
-	prev_assoc(_, a, _).
+	get_prev_assoc(_, a, _).
 
 test(size1, [setup(get_test_tree(Assoc, 1)), fail]) :-
-  prev_assoc(a, Assoc, _).
+  get_prev_assoc(a, Assoc, _).
 
 test(size2left, [setup(get_test_tree(Assoc, 2-left)), true(Key == a)]) :-
-	prev_assoc(b, Assoc, Key).
+	get_prev_assoc(b, Assoc, Key).
 
 test(size2right, [setup(get_test_tree(Assoc, 2-right)), true(Key == a)]) :-
-	prev_assoc(b, Assoc, Key).
+	get_prev_assoc(b, Assoc, Key).
 
 test(size4_var, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	prev_assoc(_, Assoc, _).
+	get_prev_assoc(_, Assoc, _).
 
 test(size4_a, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	prev_assoc(a, Assoc, _).
+	get_prev_assoc(a, Assoc, _).
 
 test(size4_b, [setup(get_test_tree(Assoc, 4)), true(Key == a)]) :-
-	prev_assoc(b, Assoc, Key).
+	get_prev_assoc(b, Assoc, Key).
 
 test(size4_c, [setup(get_test_tree(Assoc, 4)), true(Key == b)]) :-
-	prev_assoc(c, Assoc, Key).
+	get_prev_assoc(c, Assoc, Key).
 
 test(size4_d, [setup(get_test_tree(Assoc, 4)), true(Key == c)]) :-
-	prev_assoc(d, Assoc, Key).
+	get_prev_assoc(d, Assoc, Key).
 
 :- end_tests(prev_assoc_3).
 
 :- begin_tests(prev_assoc_4).
 
 test(invalid_first_argument, [setup(get_test_tree(Assoc, 4)), true((Key == d, Value == 4))]) :-
-	prev_assoc(k, Assoc, Key, Value).
+	get_prev_assoc(k, Assoc, Key, Value).
 
 test(invalid_first_argument_2, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	prev_assoc(0, Assoc, _, _).
+	get_prev_assoc(0, Assoc, _, _).
 
 test(invalid_second_argument, [fail]) :-
-	prev_assoc(_, a, _, _).
+	get_prev_assoc(_, a, _, _).
 
 test(size1, [setup(get_test_tree(Assoc, 1)), fail]) :-
-  prev_assoc(a, Assoc, _, _).
+  get_prev_assoc(a, Assoc, _, _).
 
 test(size2left, [setup(get_test_tree(Assoc, 2-left)), true((Key == a, Value == 1))]) :-
-	prev_assoc(b, Assoc, Key, Value).
+	get_prev_assoc(b, Assoc, Key, Value).
 
 test(size2right, [setup(get_test_tree(Assoc, 2-right)), true((Key == a, Value == 1))]) :-
-	prev_assoc(b, Assoc, Key, Value).
+	get_prev_assoc(b, Assoc, Key, Value).
 
 test(size4_var, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	prev_assoc(_, Assoc, _, _).
+	get_prev_assoc(_, Assoc, _, _).
 
 test(size4_a, [setup(get_test_tree(Assoc, 4)), fail]) :-
-	prev_assoc(a, Assoc, _, _).
+	get_prev_assoc(a, Assoc, _, _).
 
 test(size4_b, [setup(get_test_tree(Assoc, 4)), true((Key == a, Value == 1))]) :-
-	prev_assoc(b, Assoc, Key, Value).
+	get_prev_assoc(b, Assoc, Key, Value).
 
 test(size4_c, [setup(get_test_tree(Assoc, 4)), true((Key == b, Value == 2))]) :-
-	prev_assoc(c, Assoc, Key, Value).
+	get_prev_assoc(c, Assoc, Key, Value).
 
 test(size4_d, [setup(get_test_tree(Assoc, 4)), true((Key == c, Value == 3))]) :-
-	prev_assoc(d, Assoc, Key, Value).
+	get_prev_assoc(d, Assoc, Key, Value).
 
 :- end_tests(prev_assoc_4).
 

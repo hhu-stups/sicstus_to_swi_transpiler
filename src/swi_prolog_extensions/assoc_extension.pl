@@ -1,9 +1,9 @@
 /** <module> Extends the SWI assoc library by functionality of the Sicstus AVL library.
 */
 
-:- module(assoc_extension, [del_max_assoc_ext/4, del_min_assoc_ext/4, height_assoc/2,
-														incr_assoc/4, next_assoc/3, next_assoc/4, portray_assoc/1,
-														prev_assoc/3, prev_assoc/4, size_assoc/2]).
+:- module(assoc_extension, [get_next_assoc/3, get_next_assoc/4, get_prev_assoc/3,
+														get_prev_assoc/4, del_max_assoc_ext/4, del_min_assoc_ext/4,
+														height_assoc/2, incr_assoc/4,  portray_assoc/1, size_assoc/2]).
 
 %! del_max_assoc_ext(+Assoc, -Key, -Value, -NewAssoc) is semidet
 %
@@ -24,6 +24,82 @@ del_min_assoc_ext(Assoc, _, _, _) :-
 	fail.
 del_min_assoc_ext(Assoc, Key, Value, NewAssoc) :-
 	del_min_assoc(Assoc, Key, Value, NewAssoc).
+
+%! get_next_assoc(+Key, +Assoc, -NextKey) is semidet
+%
+% True if PreviousKey is the next key to Key in Assoc.
+get_next_assoc(Key, t(RootKey, _, _, t(LeftKey, _, _, _, t), _), NextKey) :-
+	Key == LeftKey,
+	NextKey = RootKey, !.
+get_next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey) :-
+	Key == RootKey,
+	min_assoc(RightTree, NextKey, _), !.
+get_next_assoc(Key, t(RootKey, _, _, LeftTree, _), NextKey) :-
+	RootKey @> Key,
+	get_next_assoc(Key, LeftTree, NextKey), !.
+get_next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey) :-
+	RootKey @< Key,
+	get_next_assoc(Key, RightTree, NextKey), !.
+get_next_assoc(Key, Assoc, NextKey) :-
+	min_assoc(Assoc, NextKey, _),
+	NextKey @> Key.
+
+%! get_next_assoc(+Key, +Assoc, -NextKey, -Value) is semidet
+%
+% True if PreviousKey is the next key to Key in Assoc.
+get_next_assoc(Key, t(RootKey, Value, _, t(LeftKey, _, _, _, t), _), NextKey, Value) :-
+	Key == LeftKey,
+	NextKey = RootKey, !.
+get_next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey, Value) :-
+	Key == RootKey,
+	min_assoc(RightTree, NextKey, Value), !.
+get_next_assoc(Key, t(RootKey, _, _, LeftTree, _), NextKey, Value) :-
+	RootKey @> Key,
+	get_next_assoc(Key, LeftTree, NextKey, Value), !.
+get_next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey, Value) :-
+	RootKey @< Key,
+	get_next_assoc(Key, RightTree, NextKey, Value), !.
+get_next_assoc(Key, Assoc, NextKey, Value) :-
+	min_assoc(Assoc, NextKey, Value),
+	NextKey @> Key.
+
+%! get_prev_assoc(+Key, +Assoc, -PreviousKey) is semidet
+%
+% True if PreviousKey is the previous key to Key in Assoc.
+get_prev_assoc(Key, t(RootKey, _, _, _, t(RightKey, _, _, t, _)), PreviousKey) :-
+	Key == RightKey,
+	PreviousKey = RootKey, !.
+get_prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey) :-
+	Key == RootKey,
+	max_assoc(LeftTree, PreviousKey, _), !.
+get_prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey) :-
+	RootKey @> Key,
+	get_prev_assoc(Key, LeftTree, PreviousKey), !.
+get_prev_assoc(Key, t(RootKey, _, _, _, RightTree), PreviousKey) :-
+	RootKey @< Key,
+	get_prev_assoc(Key, RightTree, PreviousKey), !.
+get_prev_assoc(Key, Assoc, PreviousKey) :-
+	max_assoc(Assoc, PreviousKey, _),
+	PreviousKey @< Key.
+
+%! get_prev_assoc(+Key, +Assoc, -PreviousKey, -Value) is semidet
+%
+% True if PreviousKey is the previous key to Key in Assoc.
+get_prev_assoc(Key, t(RootKey, Value, _, _, t(RightKey, _, _, t, _)), PreviousKey, Value) :-
+	Key == RightKey,
+	PreviousKey = RootKey, !.
+get_prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey, Value) :-
+	Key == RootKey,
+	max_assoc(LeftTree, PreviousKey, Value), !.
+get_prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey, Value) :-
+	RootKey @> Key,
+	get_prev_assoc(Key, LeftTree, PreviousKey, Value), !.
+get_prev_assoc(Key, t(RootKey, _, _, _, RightTree), PreviousKey, Value) :-
+	RootKey @< Key,
+	get_prev_assoc(Key, RightTree, PreviousKey, Value), !.
+get_prev_assoc(Key, Assoc, PreviousKey, Value) :-
+	max_assoc(Assoc, PreviousKey, Value),
+	PreviousKey @< Key.
 
 %! height_assoc(+Assoc, -Height) is det
 %
@@ -66,44 +142,6 @@ list_nodes(t(Key, Value, Balance, LeftTree, RightTree), Result) :-
 	list_nodes(RightTree, RightNodes),
 	append(LeftNodes2, RightNodes, Result).
 
-%! next_assoc(+Key, +Assoc, -NextKey) is semidet
-%
-% True if PreviousKey is the next key to Key in Assoc.
-next_assoc(Key, t(RootKey, _, _, t(LeftKey, _, _, _, t), _), NextKey) :-
-	Key == LeftKey,
-	NextKey = RootKey, !.
-next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey) :-
-	Key == RootKey,
-	min_assoc(RightTree, NextKey, _), !.
-next_assoc(Key, t(RootKey, _, _, LeftTree, _), NextKey) :-
-	RootKey @> Key,
-	next_assoc(Key, LeftTree, NextKey), !.
-next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey) :-
-	RootKey @< Key,
-	next_assoc(Key, RightTree, NextKey), !.
-next_assoc(Key, Assoc, NextKey) :-
-	min_assoc(Assoc, NextKey, _),
-	NextKey @> Key.
-
-%! next_assoc(+Key, +Assoc, -NextKey, -Value) is semidet
-%
-% True if PreviousKey is the next key to Key in Assoc.
-next_assoc(Key, t(RootKey, Value, _, t(LeftKey, _, _, _, t), _), NextKey, Value) :-
-	Key == LeftKey,
-	NextKey = RootKey, !.
-next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey, Value) :-
-	Key == RootKey,
-	min_assoc(RightTree, NextKey, Value), !.
-next_assoc(Key, t(RootKey, _, _, LeftTree, _), NextKey, Value) :-
-	RootKey @> Key,
-	next_assoc(Key, LeftTree, NextKey, Value), !.
-next_assoc(Key, t(RootKey, _, _, _, RightTree), NextKey, Value) :-
-	RootKey @< Key,
-	next_assoc(Key, RightTree, NextKey, Value), !.
-next_assoc(Key, Assoc, NextKey, Value) :-
-	min_assoc(Assoc, NextKey, Value),
-	NextKey @> Key.
-
 %! portray_assoc(+Assoc) is det
 %
 % Assoc is written to the current output stream.
@@ -138,44 +176,6 @@ portray_nodes([t(Key, Value, _)|Nodes]) :-
 	write(Value),
 	write(","),
 	portray_nodes(Nodes).
-
-%! prev_assoc(+Key, +Assoc, -PreviousKey) is semidet
-%
-% True if PreviousKey is the previous key to Key in Assoc.
-prev_assoc(Key, t(RootKey, _, _, _, t(RightKey, _, _, t, _)), PreviousKey) :-
-	Key == RightKey,
-	PreviousKey = RootKey, !.
-prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey) :-
-	Key == RootKey,
-	max_assoc(LeftTree, PreviousKey, _), !.
-prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey) :-
-	RootKey @> Key,
-	prev_assoc(Key, LeftTree, PreviousKey), !.
-prev_assoc(Key, t(RootKey, _, _, _, RightTree), PreviousKey) :-
-	RootKey @< Key,
-	prev_assoc(Key, RightTree, PreviousKey), !.
-prev_assoc(Key, Assoc, PreviousKey) :-
-	max_assoc(Assoc, PreviousKey, _),
-	PreviousKey @< Key.
-
-%! prev_assoc(+Key, +Assoc, -PreviousKey, -Value) is semidet
-%
-% True if PreviousKey is the previous key to Key in Assoc.
-prev_assoc(Key, t(RootKey, Value, _, _, t(RightKey, _, _, t, _)), PreviousKey, Value) :-
-	Key == RightKey,
-	PreviousKey = RootKey, !.
-prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey, Value) :-
-	Key == RootKey,
-	max_assoc(LeftTree, PreviousKey, Value), !.
-prev_assoc(Key, t(RootKey, _, _, LeftTree, _), PreviousKey, Value) :-
-	RootKey @> Key,
-	prev_assoc(Key, LeftTree, PreviousKey, Value), !.
-prev_assoc(Key, t(RootKey, _, _, _, RightTree), PreviousKey, Value) :-
-	RootKey @< Key,
-	prev_assoc(Key, RightTree, PreviousKey, Value), !.
-prev_assoc(Key, Assoc, PreviousKey, Value) :-
-	max_assoc(Assoc, PreviousKey, Value),
-	PreviousKey @< Key.
 
 %! size_assoc(?Assoc, -Size) is nondet
 %
