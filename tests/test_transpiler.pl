@@ -24,7 +24,19 @@ test(aggregate_file, [setup(get_sicstuscode_path(Path, "sicstuscode/aggregate.si
 	transpile_file(Path, "output/aggregate.swi.pl"),
 	consult("output/aggregate.swi.pl"),
 	get_variables(f(A, B, C), [C, B, A]),
-	list_of_integers([1, 2, 3, 5]).
+	list_of_integers([1, 2, 3, 5]),
+	unload_file("output/aggregate.swi.pl").
+
+test(assoc_file, [setup(get_sicstuscode_path(Path, "sicstuscode/assoc.sicstus.pl"))]) :-
+	transpile_file(Path, "output/assoc.swi.pl"),
+	consult("output/assoc.swi.pl"),
+	get_assoc(Assoc),
+	store_alphabet(Assoc, NewAssoc),
+	get_char_position(z, NewAssoc, 26),
+	get_char_position(b, NewAssoc, 2),
+	next_char(d, NewAssoc, e),
+	count_alphabet(NewAssoc, 26),
+	unload_file("output/assoc.swi.pl").
 
 test(avl_file, [setup(get_sicstuscode_path(Path, "sicstuscode/avl.sicstus.pl"))]) :-
 	transpile_file(Path, "output/avl.swi.pl"),
@@ -33,7 +45,8 @@ test(avl_file, [setup(get_sicstuscode_path(Path, "sicstuscode/avl.sicstus.pl"))]
 	store_alphabet(AVL, AAVL),
 	get_char_position(z, AAVL, 26),
 	next_char(d, AAVL, e),
-	count_alphabet(AAVL, 26).
+	count_alphabet(AAVL, 26),
+	unload_file("output/avl.swi.pl").
 
 test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/do_loop.sicstus.pl"))]) :-
 	transpile_file(Path, "output/do_loop.swi.pl"),
@@ -45,7 +58,8 @@ test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/do_loop.sicstu
 	count_arguments(a(b, c, d), 3),
 	count_arguments([1, 2, 3], 2),
 	number_arguments(a(a, b), [(1, a), (2, b)]),
-	add_to_items([1,2,3], 3, [4, 5, 6]).
+	add_to_items([1,2,3], 3, [4, 5, 6]),
+	unload_file("output/do_loop.swi.pl").
 
 test(inputfile_does_not_exist, [error(existence_error(_, "sicstuscode/test.pl"))]) :-
 	transpile_file("sicstuscode/test.pl", "output/test.pl").

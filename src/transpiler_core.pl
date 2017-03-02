@@ -4,6 +4,7 @@
 :- module(transpiler_core, [copy_extension_module_files/1, get_additional_directives/1, transpile_term/2]).
 
 :- use_module(transpiler_aggregate).
+:- use_module(transpiler_assoc).
 :- use_module(transpiler_avl).
 
 :- dynamic(need_do_loop_extension/0).
@@ -24,9 +25,11 @@ copy_extension_module_files(Directory) :-
 	file_directory_name(TranspilerCoreFile, TranspilerCoreFileDirectory),
 	atom_concat(TranspilerCoreFileDirectory, '/swi_prolog_extensions/', ModuleDirectory),
 	% determine necessary modules
-	extension_module_avl(ModuleList1),
-	extension_module_aggregate(ModuleList2),
-	append(ModuleList1, ModuleList2, ModuleList),
+	extension_module_aggregate(ModuleList1),
+	extension_module_assoc(ModuleList2),
+	extension_module_avl(ModuleList3),
+	append(ModuleList1, ModuleList2, ModuleListA),
+	append(ModuleListA, ModuleList3, ModuleList),
 	NewModuleList = ['do_loop_extension.pl'|ModuleList],
 	% copy modules
 	forall(member(Member, NewModuleList), copy_extension_module_file(ModuleDirectory, DestinationDirectory, Member)).
@@ -50,6 +53,9 @@ transpile_term((Term-->Body), (NTerm-->NBody)) :-
 	transpile_body(Body, NBody), !.
 transpile_term(Term, NNTerm) :-
 	transpile_aggregate_term(Term, NTerm),
+	transpile_term(NTerm, NNTerm), !.
+transpile_term(Term, NNTerm) :-
+	transpile_assoc_term(Term, NTerm),
 	transpile_term(NTerm, NNTerm), !.
 transpile_term(Term, NNTerm) :-
 	transpile_avl_term(Term, NTerm),
