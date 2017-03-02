@@ -15,7 +15,6 @@ transpile_file(InputFilePath, OutputFilePath) :-
 	open(OutputFilePath, write, OutputStream),
 	read_terms(InputStream, TermList),
 	get_additional_directives(DirectivesList),
-	write("DL:"), writeln(DirectivesList),
 	append(DirectivesList, TermList, NewTermList),
 	% extract directory of output source file path
 	absolute_file_name(OutputFilePath, AbsoluteOutputFilePath),

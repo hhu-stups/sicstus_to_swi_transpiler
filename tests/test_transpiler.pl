@@ -20,6 +20,12 @@ test_transpiler :-
 
 :- begin_tests(transpile_file, [setup(create_output_directory)]).
 
+test(aggregate_file, [setup(get_sicstuscode_path(Path, "sicstuscode/aggregate.sicstus.pl")), nondet]) :-
+	transpile_file(Path, "output/aggregate.swi.pl"),
+	consult("output/aggregate.swi.pl"),
+	get_variables(f(A, B, C), [C, B, A]),
+	list_of_integers([1, 2, 3, 5]).
+
 test(avl_file, [setup(get_sicstuscode_path(Path, "sicstuscode/avl.sicstus.pl"))]) :-
 	transpile_file(Path, "output/avl.swi.pl"),
 	consult("output/avl.swi.pl"),
