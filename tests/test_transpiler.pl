@@ -61,6 +61,14 @@ test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/do_loop.sicstu
 	add_to_items([1,2,3], 3, [4, 5, 6]),
 	unload_file("output/do_loop.swi.pl").
 
+test(ordsets_file, [setup(get_sicstuscode_path(Path, "sicstuscode/ordsets.sicstus.pl"))]) :-
+	transpile_file(Path, "output/ordsets.swi.pl"),
+	consult("output/ordsets.swi.pl"),
+	test_ordsets_predicates([1, 2, 3, 4, 5, 10, 12]),
+	test_ord_member,
+	test_ord_nonmember,
+	unload_file("output/ordsets.swi.pl").
+
 test(inputfile_does_not_exist, [error(existence_error(_, "sicstuscode/test.pl"))]) :-
 	transpile_file("sicstuscode/test.pl", "output/test.pl").
 
