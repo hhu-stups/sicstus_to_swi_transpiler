@@ -1,14 +1,11 @@
-/** <module> Transpilation of the Sicstus assoc library to SWI assoc library
+/** <module> Transpilation of the Sicstus assoc library to SWI assoc library.
 */
-:- module(transpiler_assoc, [extension_module_assoc/1, transpile_assoc_term/2]).
+:- module(transpiler_assoc, []).
 
-%! extension_module_avl(-FileName) is det
-%
-% True, if FileName is a list containing the file name of the assoc_extension module.
-extension_module_assoc(['assoc_extension.pl']).
+:- use_module(transpiler_extension).
 
-%! transpile_avl_term(+Term, -TranspiledTerm) is semidet
-%
-% True if Term is a predicate of the assoc library and TranspiledTerm is the
-% corresponding predicate of the assoc library in SWI prolog.
-transpile_assoc_term((:-use_module(library(assoc))), (:-use_module(assoc_extension))).
+:- module_trigger(assoc, library(assoc)).
+
+:- additional_module_file(assoc, 'swi_prolog_extensions/assoc_extension.pl').
+
+:- replace_module(assoc, library(assoc), assoc_extension).

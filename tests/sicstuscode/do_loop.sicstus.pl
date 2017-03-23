@@ -6,8 +6,10 @@ sum_list(List, Result) :-
 
 integer_list_between(Min, Max, Result) :-
   (for(Index, Min, Max), foreach(Index, Result) do true).
-
+    % jkljklkljkl
+% jkljklkljkl
 count_items(List, Count) :-
+  % jklklkj
   (foreach(_, List), count(_, 1, Count) do true).
 
 count_arguments(Term, Count) :-

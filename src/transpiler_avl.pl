@@ -1,19 +1,22 @@
-/** <module> Transpilation of the Sicstus AVL library to SWI assoc library
+/** <module> Transpilation of the Sicstus AVL library to SWI assoc library.
+		(cp. 10.4 Sicstus user manual and A.3 SWI prolog reference manual)
 */
-:- module(transpiler_avl, [extension_module_avl/1, transpile_avl_term/2]).
+:- module(transpiler_avl, [transpile_avl_term/2]).
 
-%! extension_module_avl(-FileName) is det
-%
-% True, if FileName is a list containing the file name of the assoc_extension module.
-extension_module_avl(['assoc_extension.pl']).
+:- use_module(transpiler_extension).
+
+:- module_trigger(avl, library(avl)).
+
+:- additional_module_file(avl, 'swi_prolog_extensions/assoc_extension.pl').
+
+:- replace_module(avl, library(avl), assoc_extension).
+
+:- transpilation_rule(avl, transpile_avl_term).
 
 %! transpile_avl_term(+Term, -TranspiledTerm) is semidet
 %
 % True if Term is a predicate of the AVL library and TranspiledTerm is the
 % corresponding predicate of the assoc library in SWI prolog.
-transpile_avl_term((:-use_module(library(avl))), (:-use_module(assoc_extension))).
-
-% cp. 10.4 Sicstus user manual and A.3 SWI prolog reference manual
 transpile_avl_term(empty_avl(X), empty_assoc(X)).
 transpile_avl_term(avl_to_list(X, Y), assoc_to_list(X, Y)).
 transpile_avl_term(is_avl(X), is_assoc(X)).
