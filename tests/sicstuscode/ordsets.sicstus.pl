@@ -2,6 +2,7 @@
 
 test_ordsets_predicates(FinalSet) :-
 	list_to_ord_set([1, 1, 3], Set1),
+	is_ordset(Set1),
 	ord_add_element(Set1, 4, Set2),
 	ord_del_element(Set2, 1, Set3),
 	ord_disjoint(Set3, [a, b]),
@@ -33,6 +34,6 @@ test_ord_nonmember :-
 	ord_nonmember(e, [b, b, c, d]),
 	ord_nonmember(a, [b, b, a]),
 	ord_nonmember(c, [a, b, d]),
-	\+ ord_member(b, [a, b, c, d]),
+	\+ ord_nonmember(c, [a, b, c, d]),
 	ord_nonmember(_, [a, b]),
-	\+ ord_nonmember(b, []).
+	ord_nonmember(b, []).

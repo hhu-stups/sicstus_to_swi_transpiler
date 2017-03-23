@@ -27,7 +27,8 @@ transpile_file(InputFilePath, OutputFilePath) :-
 	atom_concat(Directory, '/transpiler_avl.pl', PathAVL),
 	atom_concat(Directory, '/transpiler_assoc.pl', PathAssoc),
 	atom_concat(Directory, '/transpiler_aggregate.pl', PathAggregate),
-	List = [PathAVL, PathAssoc, PathAggregate],
+	atom_concat(Directory, '/transpiler_ordsets.pl', PathOrdsets),
+	List = [PathAVL, PathAssoc, PathAggregate, PathOrdsets],
 	transpile_file(InputFilePath, List, OutputFilePath).
 
 %! transpile_file(+InputFilePath, +TranspilationDefinitionFiles, +OutputFilePath) is det
