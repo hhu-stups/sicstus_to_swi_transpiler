@@ -48,7 +48,7 @@ test(avl_file, [setup(get_sicstuscode_path(Path, "sicstuscode/avl.sicstus.pl"))]
 	count_alphabet(AAVL, 26),
 	unload_file("output/avl.swi.pl").
 
-test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/do_loop.sicstus.pl"))]) :-
+test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/do_loop.sicstus.pl"))]) :-
 	transpile_file(Path, "output/do_loop.swi.pl"),
 	consult("output/do_loop.swi.pl"),
 	next_integer([1, 2, 3, 4], [2, 3, 4, 5]),
