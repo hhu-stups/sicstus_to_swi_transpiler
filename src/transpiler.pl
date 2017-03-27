@@ -95,28 +95,35 @@ write_lines(_, _, _).
 write_terms(Stream, TermList) :-
 	write_terms(Stream, 1, TermList).
 
-write_terms(Stream, _, [end_of_file(Comments)|_]) :-
+write_terms(Stream, _, [end_of_file(AttAssoc)|_]) :-
+	get_assoc(comments, AttAssoc, Comments),
 	write_comments(Stream, Comments), !.
-write_terms(Stream, CurrentLine, [dir(Name, StartPosition, EndPosition, VarNames, Comments, SubTermTree)|TermList]) :-
+write_terms(Stream, CurrentLine, [dir(Name, AttAssoc, SubTermTree)|TermList]) :-
 	% write a directive
 	% process lines befor the first character and comments
+	get_assoc(startpos, AttAssoc, StartPosition),
 	stream_position_data(line_count, StartPosition, StartLine),
+	get_assoc(comments, AttAssoc, Comments),
 	write_comments(Stream, CurrentLine, StartLine, Comments, CurrentLine2, CommentsTail),
 	write_lines(Stream, CurrentLine2, StartLine),
 	write_comments(Stream, CommentsTail),
 	% construct term and write term
 	construct_terms([SubTermTree], SubTermList),
 	Term =.. [Name|SubTermList],
+	get_assoc(varnames, AttAssoc, VarNames),
 	write_term(Stream, Term, [back_quotes(string), character_escapes(true), fullstop(true),
 														module(transpiler_core), nl(true), quoted(true), numbervars(true),
 														spacing(next_argument), variable_names(VarNames)]),
+	get_assoc(endpos, AttAssoc, EndPosition),
 	stream_position_data(line_count, EndPosition, EndLine),
 	NewCurrentLine is EndLine+1,
 	write_terms(Stream, NewCurrentLine, TermList), !.
-write_terms(Stream, CurrentLine, [pri_term(Term, StartPosition, EndPosition, Comments)|TermList]) :-
+write_terms(Stream, CurrentLine, [pri_term(Term, AttAssoc)|TermList]) :-
 	% write an atom
 	% process lines befor the first character and comments
+	get_assoc(startpos, AttAssoc, StartPosition),
 	stream_position_data(line_count, StartPosition, StartLine),
+	get_assoc(comments, AttAssoc, Comments),
 	write_comments(Stream, CurrentLine, StartLine, Comments, CurrentLine2, CommentsTail),
 	write_lines(Stream, CurrentLine2, StartLine),
 	write_comments(Stream, CommentsTail),
@@ -124,6 +131,7 @@ write_terms(Stream, CurrentLine, [pri_term(Term, StartPosition, EndPosition, Com
 	write_term(Stream, Term, [back_quotes(string), character_escapes(true), fullstop(true),
 														module(transpiler_core), nl(true), quoted(true),
 														numbervars(true), spacing(next_argument)]),
+	get_assoc(endpos, AttAssoc, EndPosition),
 	stream_position_data(line_count, EndPosition, EndLine),
 	NewCurrentLine is EndLine+1,
 	write_terms(Stream, NewCurrentLine, TermList), !.
@@ -133,20 +141,23 @@ write_terms(Stream, CurrentLine, [additional_term(Term)|TermList]) :-
 														module(transpiler_core), nl(true),
 														quoted(true), numbervars(true), spacing(next_argument)]),
 	write_terms(Stream, CurrentLine, TermList), !.
-write_terms(Stream, CurrentLine, [term(Name, StartPosition, EndPosition, _,
-																			VarNames, Comments, ArgTermTrees)|TermList]) :-
+write_terms(Stream, CurrentLine, [term(Name, AttAssoc, ArgTermTrees)|TermList]) :-
 	% write all other terms
 	% process lines befor the first character and comments
+	get_assoc(startpos, AttAssoc, StartPosition),
 	stream_position_data(line_count, StartPosition, StartLine),
+	get_assoc(comments, AttAssoc, Comments),
 	write_comments(Stream, CurrentLine, StartLine, Comments, CurrentLine2, CommentsTail),
 	write_lines(Stream, CurrentLine2, StartLine),
 	write_comments(Stream, CommentsTail),
 	% construct term and the term
 	construct_terms(ArgTermTrees, ArgTerms),
 	Term =.. [Name|ArgTerms],
+	get_assoc(varnames, AttAssoc, VarNames),
 	write_term(Stream, Term, [back_quotes(string), character_escapes(true), fullstop(true),
 														module(transpiler_core), nl(true), quoted(true), numbervars(true),
 														spacing(next_argument), variable_names(VarNames)]),
+	get_assoc(endpos, AttAssoc, EndPosition),
 	stream_position_data(line_count, EndPosition, EndLine),
 	NewCurrentLine is EndLine+1,
 	write_terms(Stream, NewCurrentLine, TermList), !.

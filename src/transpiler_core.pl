@@ -6,6 +6,8 @@
 														register_module_file/2, register_transpilation_predicate/2,
 														register_trigger/2, transpile_trees/2]).
 
+:- use_module(transpiler_builtin).
+
 :- dynamic(additional_module_file_path/2).
 :- dynamic(trigger/1).
 :- dynamic(trigger/2).
@@ -14,67 +16,62 @@
 
 :- op(1100, xfy, do).
 
-%! add_additional_terms(+TermList, +ExtendedTermList) is det.
+%! add_additional_terms(+TermList, -ExtendedTermList) is det.
 %
 % Adds neccessary Terms to TermList and unifies the result with ExtendedTermList.
 add_additional_terms([], []) :- !.
-add_additional_terms([dir(Sign, StartPosition, EndPosition, VarNames, Comments,
-													term(module, Position, FPosition, TreeList))|TermTail],
-										[ModuleTerm, additional_term(:-use_module(do_loop_extension))|
-										ExtendedTermTail]) :-
-	% if the input file is a module, it will add use_module(do_loop_extension)
-	trigger(do),
-	retract(trigger(do)), % retract trigger(do) to avoid repeated adding of use_module(do_loop_extension)
-	add_additional_terms([dir(Sign, StartPosition, EndPosition, VarNames, Comments,
-														term(module, Position, FPosition, TreeList))|TermTail],
-											ExtendedTermList),
-	ExtendedTermList = [ModuleTerm|ExtendedTermTail],
-	asserta(trigger(do)), !.
-add_additional_terms(TermList, [additional_term(:-use_module(do_loop_extension))|ExtendedTermList]) :-
-	% if the input file is not a module, it will add use_module(do_loop_extension)
-	trigger(do),
-	retract(trigger(do)),
-	add_additional_terms(TermList, ExtendedTermList),
-	asserta(trigger(do)), !.
+add_additional_terms(TermList, ExtendedTermList) :-
+	trigger(TriggerName),
+	add_additional_terms_builtin(TriggerName, TermList, AddedTerms),
+	retract(trigger(TriggerName)), % retract trigger(TriggerName) to avoid repeated adding of additional terms
+	add_additional_terms(AddedTerms, ExtendedTermList),
+	asserta(trigger(TriggerName)), !.
 add_additional_terms([Term|TermTail], [Term|ExtendedTermTail]) :-
 	add_additional_terms(TermTail, ExtendedTermTail).
 
 % check if a trigger must be fired.
-check_for_triggers(do(_, _)) :-
-	\+ trigger(do),
-	asserta(trigger(do)).
 check_for_triggers(Term) :-
-	trigger(Term, TriggerName),
+	(trigger(Term, TriggerName); trigger_for_builtin_predicates(Term, TriggerName)),
 	\+ trigger(TriggerName),
-	asserta(trigger(TriggerName)).
+	asserta(trigger(TriggerName)), !.
 
 % construct the term tree without position information
-construct_term_tree(Term, pri_term(Term, missing)) :-
+construct_term_tree(Term, pri_term(Term, AttAssoc)) :-
 	(var(Term);
 	number(Term);
 	atom(Term);
 	string(Term);
-	is_type_of(codes, Term)), !.
-construct_term_tree({Term}, brace_term(TermTree, missing)) :-
-	construct_term_tree(Term, TermTree).
-construct_term_tree(List, list(List, missing)) :-
-	is_list(List).
-construct_term_tree(Term, term(Name, missing, missing, ArgTermTrees)) :-
+	is_of_type(codes, Term)),
+	empty_assoc(AttAssoc), !.
+construct_term_tree({Term}, brace_term(TermTree, AttAssoc)) :-
+	construct_term_tree(Term, TermTree),
+	empty_assoc(AttAssoc), !.
+construct_term_tree(List, list(List, AttAssoc)) :-
+	is_list(List),
+	empty_assoc(AttAssoc), !.
+construct_term_tree(Term, term(Name, AttAssoc, ArgTermTrees)) :-
 	Term =.. [Name|ArgTerms],
-	findall(Tree, (member(ArgTerm, ArgTerms), construct_term_tree(ArgTerm, Tree)), ArgTermTrees).
+	findall(Tree, (member(ArgTerm, ArgTerms), construct_term_tree(ArgTerm, Tree)), ArgTermTrees),
+	empty_assoc(AttAssoc).
 
 % construct term tree for inner terms.
-construct_term_tree(Term, From-To, pri_term(Term, From-To)).
-construct_term_tree(Term, string_position(From, To), pri_term(Term, From-To)).
-construct_term_tree({Term}, brace_term_position(From, To, ArgPosition), brace_term(TermTree, From-To)) :-
-	construct_term_tree(Term, ArgPosition, TermTree).
-construct_term_tree(List, list_position(From, To, _, _), list(List, From-To)).
+construct_term_tree(Term, From-To, pri_term(Term, AttAssoc)) :-
+	list_to_assoc([termpos-(From-To)], AttAssoc), !.
+construct_term_tree(Term, string_position(From, To), pri_term(Term, AttAssoc)) :-
+	list_to_assoc([termpos-(From-To)], AttAssoc), !.
+construct_term_tree({Term}, brace_term_position(From, To, ArgPosition), brace_term(TermTree, AttAssoc)) :-
+	construct_term_tree(Term, ArgPosition, TermTree),
+	list_to_assoc([termpos-(From-To)], AttAssoc), !.
+construct_term_tree(List, list_position(From, To, _, _), list(List, AttAssoc)) :-
+	list_to_assoc([termpos-(From-To)], AttAssoc), !.
 construct_term_tree(Term, term_position(From, To, FFrom, FTo, SubTermPosList),
-										term(Name, From-To, FFrom-FTo, ArgTermTrees)) :-
+										term(Name, AttAssoc, ArgTermTrees)) :-
 	Term =.. [Name|ArgTerms],
-	construct_term_trees(ArgTerms, SubTermPosList, ArgTermTrees).
-construct_term_tree(Term, parentheses_term_position(From, To, ContentPos), par_term(TermTree, From-To)) :-
-	construct_term_tree(Term, ContentPos, TermTree).
+	construct_term_trees(ArgTerms, SubTermPosList, ArgTermTrees),
+	list_to_assoc([termpos-(From-To), functorpos-(FFrom-FTo)], AttAssoc), !.
+construct_term_tree(Term, parentheses_term_position(From, To, ContentPos), par_term(TermTree, AttAssoc)) :-
+	construct_term_tree(Term, ContentPos, TermTree),
+	list_to_assoc([termpos-(From-To)], AttAssoc).
 
 %! construct_term_tree(+Term, +StartPosition, +EndPosition, +TermPosition, +VarNames, +Comments, -Tree) is det.
 %
@@ -88,22 +85,29 @@ construct_term_tree(Term, parentheses_term_position(From, To, ContentPos), par_t
 % @var VarNames The list of variable names, which is given by read_term.
 % @var Comments The list of comments, which is given by read_term.
 % @var Tree The tree representation of the term.
-construct_term_tree(end_of_file, _, _, _, _, Comments, end_of_file(Comments)) :- !.
+construct_term_tree(end_of_file, _, _, _, _, Comments, end_of_file(AttAssoc)) :-
+	list_to_assoc([comments-Comments], AttAssoc), !.
 construct_term_tree(:-Term, StartPosition, EndPosition, term_position(_, _, _, _, [SubTermPos]),
-										VarNames, Comments, dir(:-, StartPosition, EndPosition, VarNames, Comments, SubTermTree)) :-
+										VarNames, Comments, dir(:-, AttAssoc, SubTermTree)) :-
+	list_to_assoc([startpos-StartPosition, endpos-EndPosition, varnames-VarNames,
+								comments-Comments], AttAssoc),
 	construct_term_tree(Term, SubTermPos, SubTermTree), !.
 construct_term_tree(?-Term, StartPosition, EndPosition, term_position(_, _, _, _, [SubTermPos]),
-										VarNames, Comments, dir(?-, StartPosition, EndPosition, VarNames, Comments, SubTermTree)) :-
+										VarNames, Comments, dir(?-, AttAssoc, SubTermTree)) :-
+	list_to_assoc([startpos-StartPosition, endpos-EndPosition, varnames-VarNames,
+								comments-Comments], AttAssoc),
 	construct_term_tree(Term, SubTermPos, SubTermTree), !.
 construct_term_tree(Term, StartPosition, EndPosition, _, _, Comments,
-										pri_term(Term, StartPosition, EndPosition, Comments)) :-
-	functor(Term, _, 0), !.
+										pri_term(Term, AttAssoc)) :-
+	functor(Term, _, 0),
+	list_to_assoc([startpos-StartPosition, endpos-EndPosition, comments-Comments], AttAssoc), !.
 construct_term_tree(Term, StartPosition, EndPosition,
 										term_position(From, To, FFrom, FTo, SubTermPosList), VarNames, Comments,
-										term(Name, StartPosition, EndPosition,
-												tp(From, To, FFrom, FTo), VarNames, Comments, ArgTermTrees)) :-
+										term(Name, AttAssoc, ArgTermTrees)) :-
 	Term =.. [Name|ArgTerms],
-	construct_term_trees(ArgTerms, SubTermPosList, ArgTermTrees), !.
+	construct_term_trees(ArgTerms, SubTermPosList, ArgTermTrees),
+	list_to_assoc([startpos-StartPosition, endpos-EndPosition, termpos-(From-To),
+								functorpos-(FFrom-FTo), varnames-VarNames, comments-Comments], AttAssoc), !.
 
 construct_term_trees([], _, _).
 construct_term_trees([Term|TermTail], [Position|PositionTail], [Tree|TreeTail]) :-
@@ -122,7 +126,7 @@ construct_terms([brace_term(TermTree, _)|TreeTail], [{Term}|TermTail]) :-
 	construct_terms(TreeTail, TermTail).
 construct_terms([list(List, _)|TreeTail], [List|TermTail]) :-
 	construct_terms(TreeTail, TermTail).
-construct_terms([term(Name, _, _, Trees)|TreeTail], [Term|TermTail]) :-
+construct_terms([term(Name, _, Trees)|TreeTail], [Term|TermTail]) :-
 	construct_terms(Trees, TermList),
 	Term =.. [Name|TermList],
 	construct_terms(TreeTail, TermTail).
@@ -178,11 +182,6 @@ load_transpilation_definition_files(DefinitionFiles) :-
 	retractall(additional_module_file_path(_, _)),
 	% load all DefinitionFiles
 	load_files(DefinitionFiles, [if(true)]).
-
-module_file_path(do, Path) :-
-	module_property(transpiler_core, file(ModulePath)),
-	file_directory_name(ModulePath, Directory),
-	atom_concat(Directory, '/swi_prolog_extensions/do_loop_extension.pl', Path).
 
 %! preprocess_term(+Term) is det.
 %
@@ -254,33 +253,21 @@ transpile_term(Term, TranspiledTerm) :-
 	call(TranspileTermName, Term, TranspiledTerm).
 transpile_term(Term, Term).
 
-transpile_tree(dir(Sign, StartPosition, EndPosition, VarNames, Comments, SubTermTree),
-							dir(Sign, StartPosition, EndPosition, VarNames, Comments, TranspiledSubTerm)) :-
+transpile_tree(dir(Sign, AttAssoc, SubTermTree), dir(Sign, AttAssoc, TranspiledSubTerm)) :-
 	transpile_tree(SubTermTree, TranspiledSubTerm), !.
-transpile_tree(pri_term(Term, StartPosition, EndPosition, Comments),
-							pri_term(TranspiledTerm, StartPosition, EndPosition, Comments)) :-
-	transpile_term(Term, TranspiledTerm), !.
-transpile_tree(term(Name, StartPosition, EndPosition, TermPosition, VarNames, Comments, ArgTermTrees),
-							term(TranspiledName, StartPosition, EndPosition, TermPosition, VarNames, Comments, TranspiledArgTermTrees)) :-
-	construct_terms(ArgTermTrees, TermList),
-	Term =.. [Name|TermList],
-	transpile_term(Term, TranspiledTerm),
-	TranspiledTerm =.. [TranspiledName|TranspiledTermList],
-	sync_tree(TermList, TranspiledTermList, ArgTermTrees, NewArgTermTrees),
-	transpile_trees(NewArgTermTrees, TranspiledArgTermTrees), !.
-transpile_tree(pri_term(Term, TermPosition), pri_term(Term, TermPosition)) :-
+transpile_tree(pri_term(Term, AttAssoc), pri_term(Term, AttAssoc)) :-
 	var(Term), !.
-transpile_tree(pri_term(Term, TermPosition), pri_term(TranspiledTerm, TermPosition)) :-
+transpile_tree(pri_term(Term, AttAssoc), pri_term(TranspiledTerm, AttAssoc)) :-
 	transpile_term(Term, TranspiledTerm), !.
-transpile_tree(brace_term(TermTree, TermPosition), brace_term(TranspiledTermTree, TermPosition)) :-
+transpile_tree(brace_term(TermTree, AttAssoc), brace_term(TranspiledTermTree, AttAssoc)) :-
 	transpile_tree(TermTree, TranspiledTermTree), !.
-transpile_tree(list(List, TermPosition), list(TranspiledList, TermPosition)) :-
+transpile_tree(list(List, AttAssoc), list(TranspiledList, AttAssoc)) :-
 	transpile_term(List, TranspiledList), !.
-transpile_tree(par_term(TermTree, TermPosition),
-							par_term(TranspiledTermTree, TermPosition)) :-
-	transpile_tree(TermTree, TranspiledTermTree), !.
-transpile_tree(term(Name, TermPosition, FunctorPosition, ArgTermTrees),
-							term(TranspiledName, TermPosition, FunctorPosition, TranspiledArgTermTrees)) :-
+transpile_tree(par_term(TermTree, AttAssoc),
+							par_term(TranspiledTermTree, AttAssoc)) :-
+	transpile_trees([TermTree], [TranspiledTermTree]), !.
+transpile_tree(term(Name, AttAssoc, ArgTermTrees),
+							term(TranspiledName, AttAssoc, TranspiledArgTermTrees)) :-
 	construct_terms(ArgTermTrees, TermList),
 	Term =.. [Name|TermList],
 	transpile_term(Term, TranspiledTerm),
@@ -293,6 +280,7 @@ transpile_tree(Tree, Tree).
 %
 % True, if TranspiledTree is a list, which contains all transpiled trees of Trees.
 transpile_trees([], []).
-transpile_trees([Tree|TreeTail], [TranspiledTree|TranspiledTail]) :-
-	transpile_tree(Tree, TranspiledTree),
+transpile_trees([Tree|TreeTail], [TranspiledTree2|TranspiledTail]) :-
+	transpile_tree_builtin_predicates(Tree, TranspiledTree1),
+	transpile_tree(TranspiledTree1, TranspiledTree2),
 	transpile_trees(TreeTail, TranspiledTail).
