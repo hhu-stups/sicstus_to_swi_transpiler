@@ -61,6 +61,17 @@ test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/do_loo
 	add_to_items([1,2,3], 3, [4, 5, 6]),
 	unload_file("output/do_loop.swi.pl").
 
+test(math_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/math.sicstus.pl"))]) :-
+	transpile_file(Path, "output/math.swi.pl"),
+	consult("output/math.swi.pl"),
+	test_comparison,
+	test_arithmetic,
+	test_integer,
+	test_xor,
+	test_floor,
+	test_log,
+	unload_file("output/math.swi.pl").
+
 test(ordsets_file, [setup(get_sicstuscode_path(Path, "sicstuscode/ordsets.sicstus.pl"))]) :-
 	transpile_file(Path, "output/ordsets.swi.pl"),
 	consult("output/ordsets.swi.pl"),

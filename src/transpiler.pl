@@ -3,6 +3,7 @@
 :- module(transpiler, [transpile_file/2, transpile_file/3]).
 
 :- use_module(transpiler_core).
+:- use_module(transpiler_messages).
 
 read_terms(Stream, []) :-
 	at_end_of_stream(Stream), !.
@@ -54,7 +55,9 @@ transpile_file(InputFilePath, TranspilationDefinitionFiles, OutputFilePath) :-
 	absolute_file_name(OutputFilePath, AbsoluteOutputFilePath),
 	file_directory_name(AbsoluteOutputFilePath, Directory),
 	% copy necessary module files
-	copy_extension_module_files(Directory).
+	copy_extension_module_files(Directory),
+	% write errors and warnings
+	write_messages.
 
 write_comments(_, []) :- !.
 write_comments(Stream, [_-Comment|Tail]) :-

@@ -7,6 +7,7 @@
 														register_trigger/2, transpile_trees/2]).
 
 :- use_module(transpiler_builtin).
+:- use_module(transpiler_messages).
 
 :- dynamic(additional_module_file_path/2).
 :- dynamic(trigger/1).
@@ -15,6 +16,7 @@
 :- dynamic(transpile_term/3).
 
 :- op(1100, xfy, do).
+:- op(500, yfx, \).
 
 %! add_additional_terms(+TermList, -ExtendedTermList) is det.
 %
@@ -109,7 +111,7 @@ construct_term_tree(Term, StartPosition, EndPosition,
 	list_to_assoc([startpos-StartPosition, endpos-EndPosition, termpos-(From-To),
 								functorpos-(FFrom-FTo), varnames-VarNames, comments-Comments], AttAssoc), !.
 
-construct_term_trees([], _, _).
+construct_term_trees([], _, []).
 construct_term_trees([Term|TermTail], [Position|PositionTail], [Tree|TreeTail]) :-
 	construct_term_tree(Term, Position, Tree),
 	construct_term_trees(TermTail, PositionTail, TreeTail).
@@ -153,9 +155,9 @@ copy_extension_module_files(Directory) :-
 copy_extension_module_files(Directory) :-
 	atom_concat(Directory, '/', DestinationDirectory),
 	% check if do trigger fired
-	trigger(do),
+	trigger(TriggerName),
 	% lookup path
-	module_file_path(do, Path),
+	module_file_path(TriggerName, Path),
 	% copy module
 	copy_extension_module_file(Path, DestinationDirectory),
 	fail.
@@ -245,6 +247,8 @@ transpile_term(Term, _) :-
 	check_for_triggers(Term),
 	fail.
 transpile_term(Term, TranspiledTerm) :-
+	transpile_builtin_term(Term, TranspiledTerm).
+transpile_term(Term, TranspiledTerm) :-
 	trigger(TriggerName),
 	transpile_term(TriggerName, Term, TranspiledTerm).
 transpile_term(Term, TranspiledTerm) :-
@@ -254,10 +258,13 @@ transpile_term(Term, TranspiledTerm) :-
 transpile_term(Term, Term).
 
 transpile_tree(dir(Sign, AttAssoc, SubTermTree), dir(Sign, AttAssoc, TranspiledSubTerm)) :-
+	get_assoc(startpos, AttAssoc, StartPos),
+	set_current_line(StartPos),
 	transpile_tree(SubTermTree, TranspiledSubTerm), !.
 transpile_tree(pri_term(Term, AttAssoc), pri_term(Term, AttAssoc)) :-
 	var(Term), !.
 transpile_tree(pri_term(Term, AttAssoc), pri_term(TranspiledTerm, AttAssoc)) :-
+	(get_assoc(startpos, AttAssoc, StartPos) -> set_current_line(StartPos); true),
 	transpile_term(Term, TranspiledTerm), !.
 transpile_tree(brace_term(TermTree, AttAssoc), brace_term(TranspiledTermTree, AttAssoc)) :-
 	transpile_tree(TermTree, TranspiledTermTree), !.
@@ -268,6 +275,7 @@ transpile_tree(par_term(TermTree, AttAssoc),
 	transpile_trees([TermTree], [TranspiledTermTree]), !.
 transpile_tree(term(Name, AttAssoc, ArgTermTrees),
 							term(TranspiledName, AttAssoc, TranspiledArgTermTrees)) :-
+	(get_assoc(startpos, AttAssoc, StartPos) -> set_current_line(StartPos); true),
 	construct_terms(ArgTermTrees, TermList),
 	Term =.. [Name|TermList],
 	transpile_term(Term, TranspiledTerm),
@@ -281,6 +289,6 @@ transpile_tree(Tree, Tree).
 % True, if TranspiledTree is a list, which contains all transpiled trees of Trees.
 transpile_trees([], []).
 transpile_trees([Tree|TreeTail], [TranspiledTree2|TranspiledTail]) :-
-	transpile_tree_builtin_predicates(Tree, TranspiledTree1),
-	transpile_tree(TranspiledTree1, TranspiledTree2),
+	transpile_tree(Tree, TranspiledTree1),
+	transpile_tree_builtin_predicates(TranspiledTree1, TranspiledTree2),
 	transpile_trees(TreeTail, TranspiledTail).
