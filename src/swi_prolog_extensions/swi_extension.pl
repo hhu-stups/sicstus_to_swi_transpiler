@@ -3,6 +3,9 @@
 
 :- module(swi_extension, [op(500, yfx, \), convert_arithmetic_expression/2]).
 
+%! convert_arithmetic_expression(+Expression, -ConvertedExpression) is det.
+%
+% Convert the arithmetic Expression of Sicstus prolog to an equivalent arithmetic ConvertedExpression of SWI prolog.
 convert_arithmetic_expression(Expression, Expression) :-
   (var(Expression); atomic(Expression)), !.
 convert_arithmetic_expression(integer(Expression), truncate(ConvertedExpression)) :-
