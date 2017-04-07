@@ -11,6 +11,13 @@
 % True, if it is neccessary to add terms, which supports built-in predicates of Sicstus in SWI,
 % to TermList, when the trigger, specifies by TriggerName, has been fired.
 % Unifies the result with ExtendedTermList.
+add_additional_terms_builtin(block_directive, [dir(Sign, StartPosition, EndPosition, VarNames, Comments,
+																	term(module, Position, FPosition, TreeList))|TermTail],
+														[dir(Sign, StartPosition, EndPosition, VarNames, Comments,
+														term(module, Position, FPosition, TreeList)),
+														additional_term(:-use_module(block_directive))|
+											TermTail]) :- !.
+add_additional_terms_builtin(block_directive, TermList, [additional_term(:-use_module(block_directive))|TermList]).
 add_additional_terms_builtin(do, [dir(Sign, StartPosition, EndPosition, VarNames, Comments,
 																	term(module, Position, FPosition, TreeList))|TermTail],
 														[dir(Sign, StartPosition, EndPosition, VarNames, Comments,
@@ -33,6 +40,10 @@ add_additional_terms_builtin(swi_extension, TermList, [additional_term(:-use_mod
 %
 % True, if there is a module, which must be copied to the output, when the trigger,
 % specifies by TriggerName, has been fired.
+module_file_path(block_directive, Path) :-
+	module_property(transpiler_core, file(ModulePath)),
+	file_directory_name(ModulePath, Directory),
+	atom_concat(Directory, '/swi_prolog_extensions/block_directive.pl', Path).
 module_file_path(do, Path) :-
 	module_property(transpiler_core, file(ModulePath)),
 	file_directory_name(ModulePath, Directory),
@@ -49,6 +60,7 @@ module_file_path(swi_extension, Path) :-
 transpile_builtin_term(acot2(X, Y), acot2(X, Y)) :-
 	create_warning("Arithmetic functor acot2/2 is not supported.",
 								"SWI-Prolog has no arithmetic functor acot2/2.").
+transpile_builtin_term(if(X, Y, Z), (X*->Y;Z)).
 
 %! transpile_tree_builtin_predicates(+Tree, -TranspiledTree) is det.
 transpile_tree_builtin_predicates(term(is, AttAssoc, [LeftTree, RightTree]),
@@ -64,17 +76,12 @@ transpile_tree_builtin_predicates(term(Sign, AttAssoc, [LeftTree, RightTree]),
 	NewRightTree = term(',', EmptyAssoc, [NewLeftTree2, NewRightTree2]),
 	NewLeftTree2 = term(convert_arithmetic_expression, EmptyAssoc, [RightTree, pri_term(ExprRight, EmptyAssoc)]),
 	NewRightTree2 = term(Sign, AttAssoc, [pri_term(ExprLeft, EmptyAssoc), pri_term(ExprRight, EmptyAssoc)]), !.
-transpile_tree_builtin_predicates(term(Name, AttAssoc, ArgTermTrees), term(Name, AttAssoc, TranspiledTrees)) :-
-	transpile_trees_builtin_predicates(ArgTermTrees, TranspiledTrees), !.
 transpile_tree_builtin_predicates(Tree, Tree).
-
-transpile_trees_builtin_predicates([], []) :- !.
-transpile_trees_builtin_predicates([Tree|TermTail], [TranspiledTree|TranspiledTail]) :-
-	transpile_tree_builtin_predicates(Tree, TranspiledTree),
-	transpile_tree_builtin_predicates(TermTail, TranspiledTail), !.
 
 %! trigger_for_builtin_predicates(Term, TriggerName) is semidet.
 %
 % True, if Term have to fire a trigger to support built-in predicates of Sicstus.
+trigger_for_builtin_predicates(Term, block_directive) :-
+	functor(Term, block, _).
 trigger_for_builtin_predicates(do(_, _), do).
 trigger_for_builtin_predicates(_, swi_extension).

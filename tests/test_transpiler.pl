@@ -48,6 +48,13 @@ test(avl_file, [setup(get_sicstuscode_path(Path, "sicstuscode/avl.sicstus.pl"))]
 	count_alphabet(AAVL, 26),
 	unload_file("output/avl.swi.pl").
 
+test(control_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/control.sicstus.pl"))]) :-
+	transpile_file(Path, "output/control.swi.pl"),
+	consult("output/control.swi.pl"),
+	test_if,
+	test_block,
+	unload_file("output/control.swi.pl").
+
 test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/do_loop.sicstus.pl"))]) :-
 	transpile_file(Path, "output/do_loop.swi.pl"),
 	consult("output/do_loop.swi.pl"),
@@ -60,6 +67,16 @@ test(do_loop_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/do_loo
 	number_arguments(a(a, b), [(1, a), (2, b)]),
 	add_to_items([1,2,3], 3, [4, 5, 6]),
 	unload_file("output/do_loop.swi.pl").
+
+test(grammar_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/grammar.sicstus.pl")), nondet]) :-
+	transpile_file(Path, "output/grammar.swi.pl"),
+	consult("output/grammar.swi.pl"),
+	phrase(expr(154), `-4+8+5*+5*6`),
+	test_expr_grammar,
+	test_do,
+	test_if,
+	test_once,
+	unload_file("output/grammar.swi.pl").
 
 test(math_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/math.sicstus.pl"))]) :-
 	transpile_file(Path, "output/math.swi.pl"),

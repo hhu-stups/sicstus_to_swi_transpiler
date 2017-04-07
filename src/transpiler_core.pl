@@ -15,6 +15,7 @@
 :- dynamic(transpile_predicate_name/2).
 :- dynamic(transpile_term/3).
 
+:- op(1150, fx, block).
 :- op(1100, xfy, do).
 :- op(500, yfx, \).
 
@@ -53,7 +54,7 @@ construct_term_tree(List, list(List, AttAssoc)) :-
 	empty_assoc(AttAssoc), !.
 construct_term_tree(Term, term(Name, AttAssoc, ArgTermTrees)) :-
 	Term =.. [Name|ArgTerms],
-	findall(Tree, (member(ArgTerm, ArgTerms), construct_term_tree(ArgTerm, Tree)), ArgTermTrees),
+	construct_term_trees(ArgTerms, ArgTermTrees),
 	empty_assoc(AttAssoc).
 
 % construct term tree for inner terms.
@@ -111,6 +112,10 @@ construct_term_tree(Term, StartPosition, EndPosition,
 	list_to_assoc([startpos-StartPosition, endpos-EndPosition, termpos-(From-To),
 								functorpos-(FFrom-FTo), varnames-VarNames, comments-Comments], AttAssoc), !.
 
+construct_term_trees([], []).
+construct_term_trees([Term|TermTail], [Tree|TreeTail]) :-
+	construct_term_tree(Term, Tree),
+	construct_term_trees(TermTail, TreeTail).
 construct_term_trees([], _, []).
 construct_term_trees([Term|TermTail], [Position|PositionTail], [Tree|TreeTail]) :-
 	construct_term_tree(Term, Position, Tree),

@@ -1,7 +1,9 @@
 /** <module> Extends SWI prolog by predicates, which are built-in predicates in Sicstus prolog.
 */
 
-:- module(swi_extension, [op(500, yfx, \), convert_arithmetic_expression/2]).
+:- module(swi_extension, [op(500, yfx, \), convert_arithmetic_expression/2, once/3]).
+
+:- meta_predicate(once(:, ?, ?)).
 
 %! convert_arithmetic_expression(+Expression, -ConvertedExpression) is det.
 %
@@ -37,3 +39,7 @@ convert_arithmetic_expression(Expression, ConvertedExpression) :-
   Expression =.. [Functor|Args],
   findall(NewArg, (member(Arg, Args), convert_arithmetic_expression(Arg, NewArg)), NewArgs),
   ConvertedExpression =.. [Functor|NewArgs].
+
+% sc. Sicstus manual 4.14.3; once for DCG
+once(Goal, S0, S) :-
+	phrase(Goal, S0, S1) -> S1=S.

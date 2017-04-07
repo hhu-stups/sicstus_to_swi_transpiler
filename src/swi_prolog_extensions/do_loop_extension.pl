@@ -1,11 +1,12 @@
 /** <module> Extends SWI prolog by do loops
 */
 
-:- module(do_loop_extension, [op(1100, xfy, do), do/2]).
+:- module(do_loop_extension, [op(1100, xfy, do), do/2, do/4]).
 
 :- dynamic(aux_assoc/1).
 
 :- meta_predicate do(?, :). % necessary to support user-definied goals in Body
+:- meta_predicate do(?, :, ?, ?).
 
 % Implementation follows 4.2.3.4 Sicstus user's manual.
 
@@ -143,6 +144,10 @@ do(param(P), Body) :- !,
 	call(CallGoal).
 do(Term, _) :-
 	type_error(iterator, Term).
+
+% sc. Sicstus manual 4.14.3; do for DCGs
+do(Iterator, Body, S0, S) :-
+	do((Iterator, fromto(S0, S1, S2, S)), phrase(Body, S1, S2)).
 
 get_base_args(count(_, _, _), [L0, L0]).
 get_base_args(for(_, _, _), [L0, L0]).
