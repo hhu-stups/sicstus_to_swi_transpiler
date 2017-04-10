@@ -16,21 +16,16 @@
 :- dynamic(transpile_term/3).
 
 :- op(1150, fx, block).
+:- op(1150, fx, mode).
 :- op(1100, xfy, do).
 :- op(500, yfx, \).
 
 %! add_additional_terms(+TermList, -ExtendedTermList) is det.
 %
 % Adds neccessary Terms to TermList and unifies the result with ExtendedTermList.
-add_additional_terms([], []) :- !.
 add_additional_terms(TermList, ExtendedTermList) :-
-	trigger(TriggerName),
-	add_additional_terms_builtin(TriggerName, TermList, AddedTerms),
-	retract(trigger(TriggerName)), % retract trigger(TriggerName) to avoid repeated adding of additional terms
-	add_additional_terms(AddedTerms, ExtendedTermList),
-	asserta(trigger(TriggerName)), !.
-add_additional_terms([Term|TermTail], [Term|ExtendedTermTail]) :-
-	add_additional_terms(TermTail, ExtendedTermTail).
+	findall(TriggerName, trigger(TriggerName), TriggerNameList),
+	add_additional_terms_builtin(TriggerNameList, TermList, ExtendedTermList).
 
 % check if a trigger must be fired.
 check_for_triggers(Term) :-

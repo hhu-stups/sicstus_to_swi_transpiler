@@ -42,7 +42,7 @@ module_trigger(TriggerName, Module) :-
 	(var(TriggerName); var(Module)),
 	instantiation_error(_).
 module_trigger(TriggerName, Module) :-
-	register_trigger(TriggerName, use_module(Module)).
+	register_trigger(TriggerName, Module).
 
 %! replace_module(+TriggerName, +ReplacedModule, +NewModule) is det
 %
@@ -53,7 +53,7 @@ replace_module(TriggerName, ReplacedModule, NewModule) :-
 	(var(TriggerName); var(ReplacedModule); var(NewModule)),
 	instantiation_error(_).
 replace_module(TriggerName, ReplacedModule, NewModule) :-
-	create_transpilation_predicate(TriggerName, use_module(ReplacedModule), use_module(NewModule)).
+	create_transpilation_predicate(TriggerName, ReplacedModule, NewModule).
 
 %! transpilation_rule(+TriggerName, +PredicateName) is det.
 %

@@ -78,6 +78,26 @@ test(grammar_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/gramma
 	test_once,
 	unload_file("output/grammar.swi.pl").
 
+test(hooks_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/hooks.sicstus.pl"))]) :-
+	transpile_file(Path, "output/hooks.swi.pl"),
+	use_module("output/hooks.swi.pl"),
+	test_goal_expansion,
+	unload_file("output/hooks.swi.pl").
+
+test(load_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/load_file.sicstus.pl"))]) :-
+	transpile_file(Path, "output/load_file.swi.pl"),
+	get_sicstuscode_path(PathTestModule, "sicstuscode/builtin/test_module.pl"),
+	copy_file(PathTestModule, "output/test_module.pl"),
+	get_sicstuscode_path(PathTest, "sicstuscode/builtin/test.pl"),
+	copy_file(PathTest, "output/test.pl"),
+	get_sicstuscode_path(PathInclude1, "sicstuscode/builtin/include_file1.pl"),
+	copy_file(PathInclude1, "output/include_file1.pl"),
+	get_sicstuscode_path(PathInclude2, "sicstuscode/builtin/include_file2.pl"),
+	copy_file(PathInclude2, "output/include_file2.pl"),
+	use_module("output/load_file.swi.pl"),
+	test_compile("output/test.pl"),
+	unload_file("output/load_file.swi.pl").
+
 test(math_file, [setup(get_sicstuscode_path(Path, "sicstuscode/builtin/math.sicstus.pl"))]) :-
 	transpile_file(Path, "output/math.swi.pl"),
 	consult("output/math.swi.pl"),
