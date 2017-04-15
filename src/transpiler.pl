@@ -17,6 +17,22 @@ read_terms(Stream, [TermTree|TermList]) :-
   construct_term_tree(Term, StartPosition, EndPosition, TermPosisiton, VarNames, Comments, TermTree),
 	read_terms(Stream, TermList).
 
+% initialization predicate to handle arguments
+start :-
+	current_prolog_flag(argv, Argv),
+	[InputFilePath, OutputFilePath] = Argv, !,
+	catch(transpile_file(InputFilePath, OutputFilePath), Error, print_message(error, Error)),
+	halt.
+start :-
+	current_prolog_flag(argv, Argv),
+	[InputFilePath, OutputFilePath|TranspilationDefinitionFiles] = Argv, !,
+	catch(transpile_file(InputFilePath, TranspilationDefinitionFiles, OutputFilePath), Error,
+				print_message(error, Error)),
+	halt.
+start :-
+	print_message(error, "The command line arguments are not valid or missing."),
+	halt.
+
 %! transpile_file(+InputFilePath, +OutputFilePath) is det
 %
 % Transpile the Sicstus prolog code of the input file, specified by InputFilePath,

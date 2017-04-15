@@ -55,6 +55,23 @@ replace_module(TriggerName, ReplacedModule, NewModule) :-
 replace_module(TriggerName, ReplacedModule, NewModule) :-
 	create_transpilation_predicate(TriggerName, ReplacedModule, NewModule).
 
+%! operator(+Operator) is det.
+%
+% Adds an Operator to the transpiler. As a result the transpiler can read files, which use the
+% added operator. The Operator must be valid operator definition op/3.
+%
+% @throws instantiation_error if TriggerName or Operatpor insufficiently instantiated.
+% @throws type_error if Operator is not a valid op/3 predicate.
+operator(Operator) :-
+	var(Operator),
+	instantiation_error(_).
+operator(Operator) :-
+	Operator \= op(_, _, _),
+	type_error(op/3, Operator).
+operator(op(Precedence, Type, Name)) :-
+	register_operator(op(Precedence, Type, Name)).
+
+
 %! transpilation_rule(+TriggerName, +PredicateName) is det.
 %
 % Adds a new tranpilation rule (a predicate) to the transpiler. The predicate must be

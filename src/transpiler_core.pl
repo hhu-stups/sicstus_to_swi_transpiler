@@ -3,8 +3,8 @@
 :- module(transpiler_core, [add_additional_terms/2, construct_term_tree/7, construct_terms/2,
 														copy_extension_module_files/1, create_transpilation_predicate/3,
 														load_transpilation_definition_files/1, preprocess_term/1,
-														register_module_file/2, register_transpilation_predicate/2,
-														register_trigger/2, transpile_trees/2]).
+														register_module_file/2, register_operator/1,
+														register_transpilation_predicate/2, register_trigger/2, transpile_trees/2]).
 
 :- use_module(transpiler_builtin).
 :- use_module(transpiler_messages).
@@ -188,8 +188,11 @@ load_transpilation_definition_files(DefinitionFiles) :-
 %! preprocess_term(+Term) is det.
 %
 % Preprocess Term to support operators.
-preprocess_term(:-op(Priority, Type, Name)) :-
+preprocess_term(op(Priority, Type, Name)) :-
 	op(Priority, Type, Name), !.
+preprocess_term(Term) :-
+	Term =.. List,
+	forall(member(SubTerm, List), (compound(SubTerm), preprocess_term(SubTerm))), !.
 preprocess_term(_).
 
 %! register_module_file(TriggerName, Path) is det.
@@ -199,6 +202,13 @@ preprocess_term(_).
 register_module_file(TriggerName, Path) :-
  \+ additional_module_file_path(TriggerName, Path),
  asserta(additional_module_file_path(TriggerName, Path)).
+
+%! register_operator(Operator) is det.
+%
+% Register an Operator empowering the the transpiler to read terms, which use the
+% registered Operator. Operator must be the op/3 predicate.
+register_operator(op(Precedence, Type, Name)) :-
+	op(Precedence, Type, Name).
 
 %! register_transpilation_predicate(TriggerName, PredicateName) is det.
 %
